@@ -1,0 +1,26 @@
+
+=== Testing vegas for 60 seconds ===
+$ /home/supraja/pantheon/src/wrappers/vegas.py run_first
+$ /home/supraja/pantheon/src/wrappers/vegas.py receiver 44187
+Attempt to set 'vegas' congestion control failed: Operation not permitted
+------------------------------------------------------------
+Server listening on TCP port 44187
+TCP window size:  128 KByte (default)
+------------------------------------------------------------
+$ /home/supraja/pantheon/src/wrappers/vegas.py sender 127.0.0.1 44187
+Attempt to set 'vegas' congestion control failed: Operation not permitted
+[  1] local 127.0.0.1 port 44187 connected with 127.0.0.1 port 50308
+------------------------------------------------------------
+Client connecting to 127.0.0.1, TCP port 44187
+TCP window size: 2.50 MByte (default)
+------------------------------------------------------------
+[  1] local 127.0.0.1 port 50308 connected with 127.0.0.1 port 44187
+kill_proc_group: killed process group with pgid 85855
+kill_proc_group: killed process group with pgid 85905
+[✓] Metrics written to logs/metrics_vegas_1744958479.csv
+✅ Passed all tests!
+Waiting for server threads to complete. Interrupt again to force quit.
+[ ID] Interval       Transfer     Bandwidth
+[  1] 0.0000-559.4251 sec  8.10 GBytes   124 Mbits/sec
+[ ID] Interval       Transfer     Bandwidth
+[  1] 0.0000-559.4439 sec  8.11 GBytes   125 Mbits/sec

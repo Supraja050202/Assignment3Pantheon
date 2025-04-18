@@ -43,13 +43,11 @@ class TestRunner:
         self._setup_directories()
     
     def _setup_directories(self):
-        """Create required directories if they don't exist"""
         self.results_dir.mkdir(exist_ok=True)
         self.graphs_dir.mkdir(exist_ok=True)
         self.logs_dir.mkdir(exist_ok=True)
     
     def _run_single_test(self, algorithm: str, profile: str, config: NetworkProfile):
-        """Execute a single test scenario"""
         result_path = self.results_dir / f"profile_{profile}" / algorithm
         result_path.mkdir(parents=True, exist_ok=True)
 
@@ -82,7 +80,6 @@ class TestRunner:
         
         for profile_id, profile_config in TestConfig.PROFILES.items():
             print(f"\n--- Running tests for Network Profile {profile_id} (latency = {profile_config.latency} ms) ---")
-            
             for algorithm in TestConfig.ALGORITHMS:
                 print(f"[INFO] Testing congestion control algorithm: {algorithm.upper()}")
                 result_file = self._run_single_test(algorithm, profile_id, profile_config)
@@ -109,14 +106,12 @@ class TestRunner:
             print("[ERROR] No data available for plotting")
             return
 
-        # Define color scheme for each algorithm
         self.color_map = {
-            "bbr": "#8A2BE2",     # Blue-Violet
-            "vivace": "#DC143C",  # Crimson
-            "vegas": "#32CD32"    # LimeGreen
+            "bbr": "#8A2BE2",
+            "vivace": "#DC143C",
+            "vegas": "#32CD32"
         }
 
-        # Apply modern style and high-res settings
         plt.style.use("seaborn-v0_8-darkgrid")
         plt.rcParams.update({
             "figure.dpi": 150,
@@ -138,7 +133,6 @@ class TestRunner:
             plt.figure(figsize=(10, 6))
             for algorithm in data['scheme'].unique():
                 subset = data[(data['scheme'] == algorithm) & (data['profile'] == profile)]
-                # Line plot instead of scatter plot
                 plt.plot(subset['timestamp'], subset['throughput'], 
                          label=algorithm.upper(), 
                          color=self.color_map[algorithm], marker='o', linestyle='-', markersize=6)
@@ -162,7 +156,6 @@ class TestRunner:
             plt.figure(figsize=(10, 6))
             for algorithm in data['scheme'].unique():
                 subset = data[(data['scheme'] == algorithm) & (data['profile'] == profile)]
-                # Line plot instead of scatter plot
                 plt.plot(subset['timestamp'], subset['loss_rate'], 
                          label=algorithm.upper(), 
                          color=self.color_map[algorithm], marker='x', linestyle='-', markersize=6)
@@ -192,24 +185,39 @@ class TestRunner:
                     rtt_records.append(record)
         
         summary_df = pd.DataFrame(rtt_records, 
-                                columns=["Algorithm", "Profile", "Avg RTT", "95th RTT"])
+                                  columns=["Algorithm", "Profile", "Avg RTT", "95th RTT"])
         summary_df.to_csv(self.graphs_dir / "rtt_summary.csv", index=False)
         print("[INFO] Generated RTT summary statistics")
 
+        # === Integrated Bar Chart for RTT Summary ===
+        summary_df['Label'] = summary_df['Algorithm'] + '\n(' + summary_df['Profile'] + ')'
+        x = range(len(summary_df))
+        width = 0.35
+
+        fig, ax = plt.subplots(figsize=(10, 6))
+        ax.bar([i - width/2 for i in x], summary_df['Avg RTT'], width, label='Avg RTT')
+        ax.bar([i + width/2 for i in x], summary_df['95th RTT'], width, label='95th RTT')
+
+        ax.set_ylabel('RTT (ms)')
+        ax.set_title('Avg vs 95th-Percentile RTT by Algorithm and Profile')
+        ax.set_xticks(list(x))
+        ax.set_xticklabels(summary_df['Label'], rotation=45, ha='right')
+        ax.legend()
+        ax.grid(True, linestyle='--', axis='y', alpha=0.6)
+
+        plt.tight_layout()
+        plt.savefig(self.graphs_dir / "rtt_summary_plot.png")
+        plt.close()
+        print("[INFO] Saved RTT summary bar chart to graphs/rtt_summary_plot.png")
+
     def _plot_rtt_vs_throughput(self, data: pd.DataFrame):
         plt.figure(figsize=(10, 6))
-        marker_map = {
-            "low_latency": "o",
-            "high_latency": "s"
-        }
-        
         for profile in data['profile'].unique():
             for algorithm in data['scheme'].unique():
                 subset = data[(data['scheme'] == algorithm) & (data['profile'] == profile)]
                 if not subset.empty:
                     avg_rtt = subset['rtt'].mean()
                     avg_throughput = subset['throughput'].mean()
-                    # Line plot for RTT vs Throughput
                     plt.plot(avg_rtt, avg_throughput, 
                              label=f'{algorithm.upper()}-{profile}', 
                              color=self.color_map[algorithm], marker='o', linestyle='-', markersize=6)

@@ -1,167 +1,80 @@
-# Pantheon of Congestion Control
-The Pantheon contains wrappers for many popular practical and research
-congestion control schemes. The Pantheon enables them to run on a common
-interface, and has tools to benchmark and compare their performances.
-Pantheon tests can be run locally over emulated links using
-[mahimahi](http://mahimahi.mit.edu/) or over the Internet to a remote machine.
+Pantheon Congestion Control Analysis
 
-Our website is <https://pantheon.stanford.edu>, where you can find more
-information about Pantheon, including supported schemes, measurement results
-on a global testbed so far, and our paper at [USENIX ATC 2018](https://www.usenix.org/conference/atc18/presentation/yan-francis)
-(**Awarded Best Paper**).
-In case you are interested, the scripts and traces
-(including "calibrated emulators") for running the testbed can be found in
-[observatory](https://github.com/StanfordSNR/observatory).
+This project provides tools and scripts for evaluating the performance of various congestion control algorithms using the Pantheon framework combined with MahiMahi for network emulation. The evaluation compares algorithms such as BBR, Vegas, and Vivace under different simulated network conditions to assess their behavior in terms of throughput, latency, and packet loss.
 
-To discuss and talk about Pantheon-related topics and issues, feel free to
-post in the [Google Group](https://groups.google.com/forum/#!forum/pantheon-stanford)
-or send an email to `pantheon-stanford <at> googlegroups <dot> com`.
 
-## Disclaimer
-This is research software. Our scripts will write to the file system in the
-`pantheon` folder. We never run third party programs as root, but we cannot
-guarantee they will never try to escalate privilege to root.
+Project Highlights
 
-You might want to install dependencies and run the setup on your own, because
-our handy scripts will install packages and perform some system-wide settings
-(e.g., enabling IP forwarding, loading kernel modeuls) as root.
-Please run at your own risk.
+Leverages Pantheon, a unified platform for congestion control research and testing.
 
-## Preparation
-To clone this repository, run:
+Simulates realistic network conditions using MahiMahi.
 
-```
-git clone https://github.com/StanfordSNR/pantheon.git
-```
+Automates end-to-end experiment execution, result collection, and analysis.
 
-Many of the tools and programs run by the Pantheon are git submodules in the
-`third_party` folder. To add submodules after cloning, run:
+Generates raw logs, CSV reports, and visual graphs for easy comparison.
 
-```
-git submodule update --init --recursive  # or tools/fetch_submodules.sh
-```
 
-## Dependencies
-We provide a handy script `tools/install_deps.sh` to install globally required
-dependencies; these dependencies are required before testing **any** scheme
-and are different from the flag `--install-deps` below.
-In particular, we created the [Pantheon-tunnel](https://github.com/StanfordSNR/pantheon-tunnel)
-that is required to instrument each scheme.
+Prerequisites
 
-You might want to inspect the contents of
-`install_deps.sh` and install these dependencies by yourself in case you want to
-manage dependencies differently. Please note that Pantheon currently
-**only** supports Python 2.7.
+1. Ubuntu 20.04 or later
 
-Next, for those dependencies required by each congestion control scheme `<cc>`,
-run `src/wrappers/<cc>.py deps` to print a dependency list. You could install
-them by yourself, or run
+2. Python 3.8+
 
-```
-src/experiments/setup.py --install-deps (--all | --schemes "<cc1> <cc2> ...")
-```
+3. Git
 
-to install dependencies required by all schemes or a list of schemes separated
-by spaces.
+4. MahiMahi network emulator
 
-## Setup
-After installing dependencies, run
 
-```
-src/experiments/setup.py [--setup] [--all | --schemes "<cc1> <cc2> ..."]
-```
+Installation
 
-to set up supported congestion control schemes. `--setup` is required
-to be run only once. In contrast, `src/experiments/setup.py` is
-required to be run on every reboot (without `--setup`).
+1. Clone the repository:
 
-## Running the Pantheon
-To test schemes in emulated networks locally, run
+git clone https://github.com/Supraja050202/Assignment3Pantheon.git
 
-```
-src/experiments/test.py local (--all | --schemes "<cc1> <cc2> ...")
-```
 
-To test schemes over the Internet to remote machine, run
+2. Navigate to the project directory:
 
-```
-src/experiments/test.py remote (--all | --schemes "<cc1> <cc2> ...") HOST:PANTHEON-DIR
-```
+cd Assignment3Pantheon/pantheon/
 
-Run `src/experiments/test.py local -h` and `src/experiments/test.py remote -h`
-for detailed usage and additional optional arguments, such as multiple flows,
-running time, arbitrary set of mahimahi shells for emulation tests,
-data sender side for real tests; use `--data-dir DIR` to specify an
-an output directory to save logs.
 
-## Pantheon analysis
-To analyze test results, run
+3. Install dependencies:
 
-```
-src/analysis/analyze.py --data-dir DIR
-```
+Install required tools and dependencies.
 
-It will analyze the logs saved by `src/experiments/test.py`, then generate
-performance figures and a full PDF report `pantheon_report.pdf`.
 
-## Running a single congestion control scheme
-All the available schemes can be found in `src/config.yml`. To run a single
-congestion control scheme, first follow the **Dependencies** section to install
-the required dependencies.
+4. Running Experiments:
 
-At the first time of running, run `src/wrappers/<cc>.py setup`
-to perform the persistent setup across reboots, such as compilation,
-generating or downloading files to send, etc. Then run
-`src/wrappers/<cc>.py setup_after_reboot`, which also has to be run on every
-reboot. In fact, `test/setup.py` performs `setup_after_reboot` by
-default, and runs `setup` on schemes when `--setup` is given.
+To execute the experiments across different congestion control algorithms and profiles, simply run:
 
-Next, execute the following command to find the running order for a scheme:
-```
-src/wrappers/<cc>.py run_first
-```
+python3 results.py
 
-Depending on the output of `run_first`, run
 
-```
-# Receiver first
-src/wrappers/<cc>.py receiver port
-src/wrappers/<cc>.py sender IP port
-```
+5. Output Structure
 
-or
+Once experiments are completed, the following directories will be generated:
 
-```
-# Sender first
-src/wrappers/<cc>.py sender port
-src/wrappers/<cc>.py receiver IP port
-```
+	a. Raw Logs
 
-Run `src/wrappers/<cc>.py -h` for detailed usage.
+		Location: pantheon/logs/
 
-## How to add your own congestion control
-Adding your own congestion control to Pantheon is easy! Just follow these
-steps:
+		Description: Contains detailed logs of each experimental run.
 
-1. Fork this repository.
+	b. Graphs
 
-2. Add your congestion control repository as a submodule to `pantheon`:
+		Location: pantheon/graphs/
 
-   ```
-   git submodule add <your-cc-repo-url> third_party/<your-cc-repo-name>
-   ```
+		Description: Visual representation of:
 
-   and add `ignore = dirty` to `.gitmodules` under your submodule.
+				i. Throughput
 
-3. In `src/wrappers`, read `example.py` and create your own `<your-cc-name>.py`.
-   Make sure the sender and receiver run longer than 60 seconds; you could also
-   leave them running forever without the need to kill them.
+				ii. Latency (RTT)
 
-4. Add your scheme to `src/config.yml` along with settings of
-   `name`, `color` and `marker`, so that `src/experiments/test.py` is able to
-   find your scheme and `src/analysis/analyze.py` is able to plot your scheme
-   with the specified settings.
+				iii. Packet Loss
 
-5. Add your scheme to `SCHEMES` in `.travis.yml` for continuous integration testing.
+	c. CSV Results: Contain quantitative experiment outputs for further statistical analysis.
 
-6. Send us a pull request and that's it, you're in the Pantheon!
+	Network Profile	Output Path:
+
+	High Latency Profile	pantheon/results/profile_high_latency/
+
+	Low Latency Profile	pantheon/results/profile_low_latency/

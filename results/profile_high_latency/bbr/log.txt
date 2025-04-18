@@ -1,0 +1,26 @@
+
+=== Testing bbr for 60 seconds ===
+$ /home/supraja/pantheon/src/wrappers/bbr.py run_first
+$ /home/supraja/pantheon/src/wrappers/bbr.py receiver 46415
+Attempt to set 'bbr' congestion control failed: No such file or directory
+------------------------------------------------------------
+Server listening on TCP port 46415
+TCP window size:  128 KByte (default)
+------------------------------------------------------------
+$ /home/supraja/pantheon/src/wrappers/bbr.py sender 127.0.0.1 46415
+Attempt to set 'bbr' congestion control failed: No such file or directory
+[  1] local 127.0.0.1 port 46415 connected with 127.0.0.1 port 44682
+------------------------------------------------------------
+Client connecting to 127.0.0.1, TCP port 46415
+TCP window size: 2.50 MByte (default)
+------------------------------------------------------------
+[  1] local 127.0.0.1 port 44682 connected with 127.0.0.1 port 46415
+kill_proc_group: killed process group with pgid 85141
+kill_proc_group: killed process group with pgid 85214
+[✓] Metrics written to logs/metrics_bbr_1744957851.csv
+✅ Passed all tests!
+Waiting for server threads to complete. Interrupt again to force quit.
+[ ID] Interval       Transfer     Bandwidth
+[  1] 0.0000-59.9585 sec   155 GBytes  22.2 Gbits/sec
+[ ID] Interval       Transfer     Bandwidth
+[  1] 0.0000-59.9681 sec   155 GBytes  22.2 Gbits/sec
